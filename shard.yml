@@ -1,0 +1,25 @@
+name: marten_mailgun_emailing
+version: 0.1.0.dev
+
+authors:
+  - Morgan Aubert <me@morganaubert.name>
+
+description: |
+  A Mailgun emailing backend for the Marten web framework.
+
+crystal: ">= 1.4.0"
+
+dependencies:
+  marten:
+    github: martenframework/marten
+    branch: main
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.1.0
+  webmock:
+    github: manastech/webmock.cr
+    branch: master
+
+license: MIT
