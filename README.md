@@ -3,7 +3,7 @@
 [![CI](https://github.com/martenframework/marten-mailgun-emailing/workflows/Specs/badge.svg)](https://github.com/martenframework/marten-mailgun-emailing/actions)
 [![CI](https://github.com/martenframework/marten-mailgun-emailing/workflows/QA/badge.svg)](https://github.com/martenframework/marten-mailgun-emailing/actions)
 
-**Marten Mailgun Emailing** provides a [Mailgun](https://www.mailgun.com/) backend that can be used with Marten web framework's [emailing system](https://martenframework.com/docs/next/emailing).
+**Marten Mailgun Emailing** provides a [Mailgun](https://www.mailgun.com/) backend that can be used with Marten web framework's [emailing system](https://martenframework.com/docs/emailing).
 
 ## Installation
 
