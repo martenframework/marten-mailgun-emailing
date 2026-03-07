@@ -154,6 +154,22 @@ describe MartenMailgunEmailing::Backend do
       backend.deliver(MartenMailgunEmailing::BackendSpec::TestEmailWithHeaders.new({"Foo" => "bar"}))
     end
 
+    it "delivers a simple email with attachments as expected" do
+      WebMock
+        .stub(:post, "https://api.mailgun.net/v3/sender.example.com/messages")
+        .with(
+          body: MartenMailgunEmailing::BackendSpec.expected_attachment_body,
+          headers: {
+            "Authorization" => "Basic #{Base64.strict_encode("api:api-key")}",
+            "Content-Type"  => "multipart/form-data; boundary=\"marten-mailgun-boundary\"",
+          }
+        )
+        .to_return(body: "")
+
+      backend = MartenMailgunEmailing::Backend.new(api_key: "api-key", sender_domain: "sender.example.com")
+      backend.deliver(MartenMailgunEmailing::BackendSpec::TestEmailWithAttachment.new)
+    end
+
     it "raises as expected if the response is not a success" do
       WebMock.stub(:post, "https://api.mailgun.net/v3/sender.example.com/messages").to_return do
         HTTP::Client::Response.new(400, body: "This is bad!")
@@ -169,6 +185,26 @@ describe MartenMailgunEmailing::Backend do
 end
 
 module MartenMailgunEmailing::BackendSpec
+  def self.expected_attachment_body : String
+    io = IO::Memory.new
+    builder = HTTP::FormData::Builder.new(io, "marten-mailgun-boundary")
+
+    builder.field("from", "John Doe <from@example.com>")
+    builder.field("to", "to@example.com")
+    builder.field("subject", "Hello World!")
+    builder.field("html", "HTML body")
+    builder.field("text", "Text body")
+    builder.file(
+      "attachment",
+      IO::Memory.new("Attachment content"),
+      HTTP::FormData::FileMetadata.new(filename: "test_attachment.txt"),
+      HTTP::Headers{"Content-Type" => "text/plain"}
+    )
+    builder.finish
+
+    io.to_s
+  end
+
   class TestEmail < Marten::Email
     subject "Hello World!"
     to "to@example.com"
@@ -204,6 +240,12 @@ module MartenMailgunEmailing::BackendSpec
 
     def headers
       @headers
+    end
+  end
+
+  class TestEmailWithAttachment < TestEmail
+    def initialize
+      attach(IO::Memory.new("Attachment content"), filename: "test_attachment.txt")
     end
   end
 end
