@@ -50,7 +50,9 @@ module MartenMailgunEmailing
       HTTP::Headers{
         "Authorization" => "Basic #{Base64.strict_encode("api:#{api_key}")}",
       }.tap do |headers|
-        headers["Content-Type"] = content_type.not_nil! unless content_type.nil?
+        content_type.try do |ct|
+          headers["Content-Type"] = ct
+        end
       end
     end
 
