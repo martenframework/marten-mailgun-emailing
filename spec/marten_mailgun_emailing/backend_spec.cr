@@ -166,6 +166,17 @@ describe MartenMailgunEmailing::Backend do
         )
         .to_return(body: "")
 
+      WebMock
+        .stub(:post, "https://api.mailgun.net/v3/sender.example.com/messages")
+        .with(
+          body: MartenMailgunEmailing::BackendSpec.expected_attachment_body(charset: "utf-8"),
+          headers: {
+            "Authorization" => "Basic #{Base64.strict_encode("api:api-key")}",
+            "Content-Type"  => "multipart/form-data; boundary=\"marten-mailgun-boundary\"",
+          }
+        )
+        .to_return(body: "")
+
       backend = MartenMailgunEmailing::Backend.new(api_key: "api-key", sender_domain: "sender.example.com")
       backend.deliver(MartenMailgunEmailing::BackendSpec::TestEmailWithAttachment.new)
     end
@@ -185,7 +196,7 @@ describe MartenMailgunEmailing::Backend do
 end
 
 module MartenMailgunEmailing::BackendSpec
-  def self.expected_attachment_body : String
+  def self.expected_attachment_body(charset : String? = nil) : String
     io = IO::Memory.new
     builder = HTTP::FormData::Builder.new(io, "marten-mailgun-boundary")
 
@@ -198,7 +209,7 @@ module MartenMailgunEmailing::BackendSpec
       "attachment",
       IO::Memory.new("Attachment content"),
       HTTP::FormData::FileMetadata.new(filename: "test_attachment.txt"),
-      HTTP::Headers{"Content-Type" => "text/plain"}
+      HTTP::Headers{"Content-Type" => "text/plain#{charset ? "; charset=#{charset}" : ""}"}
     )
     builder.finish
 
